@@ -9,58 +9,72 @@ import { addFileUser } from "../../redux/actionCreators/filefoldersActionCreator
 
 const UploadImage = ({ currentFolder }) => {
   const [showModal, setShowModal] = useState(false);
-  const [Image, setImage] = useState(null);
-  const [ImageName, setImageName] = useState("");
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
   const [progress, setProgress] = useState(0);
 
   const dispatch = useDispatch();
-  const { userId, userImages } = useSelector(
+  const { userId, userFiles } = useSelector(
     (state) => ({
       userId: state.auth.userId,
-      userFiles: state.Imagefolders.userImages,
+      userFiles: state.filefolders.userFiles,
     }),
     shallowEqual
   );
 
-  const handleImageSubmit = (e) => {
+  const handleFileSubmit = (e) => {
     e.preventDefault();
-    if (!Image) return toast.dark("Please add image name!");
-    const ImageExtension = Image.name.split(".").reverse()[0];
+    if (!file) return toast.dark("Please add file name!");
+    const fileExtension = file.name.split(".").reverse()[0];
     const allowedExtensions = [
-     
-     
+      "html",
+      "php",
+      "js",
+      "jsx",
+      "txt",
+      "xml",
+      "css",
+      "c",
+      "cpp",
+      "java",
+      "cs",
+      "py",
+      "json",
+      "ppt",
+      "pptx",
+      "docx",
       "png",
       "jpg",
       "jpeg",
       "gif",
       "svg",
-      // "mp3",
-      // "mp4",
-      // "webm",
-      // "pdf",
+      "mp3",
+      "mp4",
+      "webm",
+      "pdf",
     ];
 
-    if (allowedExtensions.indexOf(ImageExtension) === -1) {
-      return toast.dark(`File with extension ${ImageExtension} not allowed!`);
+    if (allowedExtensions.indexOf(fileExtension) === -1) {
+      return toast.dark(`File with extension ${fileExtension} not allowed!`);
     }
-    const filteredImages =
+    const filteredFiles =
       currentFolder === "root folder"
-        ? userImages.filter(
-            (Image) =>
-            Image.data.parent === "" &&
-            Image.data.name === ImageName.split("\\").reverse()[0]
+        ? userFiles.filter(
+            (file) =>
+              file.data.parent === "" &&
+              file.data.name === fileName.split("\\").reverse()[0]
           )
-        : userImages.filter(
-            (Image) =>
-            Image.data.parent === currentFolder.docId &&
-            Image.data.name === ImageName.split("\\").reverse()[0]
+        : userFiles.filter(
+            (file) =>
+              file.data.parent === currentFolder.docId &&
+              file.data.name === fileName.split("\\").reverse()[0]
           );
-    if (filteredImages.length > 0)
+    if (filteredFiles.length > 0)
       return toast.dark("This is alredy present in folder");
 
-    const uploadImageRef = storage.ref(`Images/${userId}/${Image.name}`);
+    const uploadFileRef = storage.ref(`files/${userId}/${file.name}`);
 
-    uploadImageRef.put(Image).on(
+    uploadFileRef.put(file).on(
       "state_change",
       (snapshot) => {
         const newProgress =
@@ -71,19 +85,19 @@ const UploadImage = ({ currentFolder }) => {
         return toast.error(error.message);
       },
       async () => {
-        const url = await uploadImageRef.getDownloadURL();
+        const url = await uploadFileRef.getDownloadURL();
         if (currentFolder === "root folder") {
           dispatch(
             addFileUser({
               uid: userId,
               parent: "",
               data: "",
-              name: Image.name,
+              name: file.name,
               url: url,
               path: [],
             })
           );
-          setImage("");
+          setFile("");
           setProgress(0);
           setShowModal(false);
           return;
@@ -102,12 +116,12 @@ const UploadImage = ({ currentFolder }) => {
             uid: userId,
             parent: currentFolder.docId,
             data: "",
-            name: Image.name,
+            name: file.name,
             url: url,
             path: path,
           })
         );
-        setImage("");
+        setFile("");
         setProgress(0);
         setShowModal(false);
         return;
@@ -140,15 +154,14 @@ const UploadImage = ({ currentFolder }) => {
           ) : progress === 100 ? (
             <h1>Image Uploaded Successfully</h1>
           ) : (
-            <Form onSubmit={handleImageSubmit} encType="multipart/form-data">
+            <Form onSubmit={handleFileSubmit} encType="multipart/form-data">
               <Form.Group controlId="formBasicFolderName" className="my-2">
                 <input
                   type="file"
                   className="file"
                   onChange={(e) => {
-                    
-                    setImageName(e.target.value);
-                    setImage(e.target.Images[0]);
+                    setFileName(e.target.value);
+                    setFile(e.target.files[0]);
                   }}
                   custom="true"
                 />

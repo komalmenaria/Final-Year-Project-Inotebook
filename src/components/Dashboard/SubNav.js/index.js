@@ -16,7 +16,9 @@ const SubNav = ({ currentFolder }) => {
         <>
           <BreadCrum currentFolder={currentFolder} />
           {currentFolder.data.createdBy !== "admin" && (
-            <div className="ml-auto col-md-5 d-flex justify-content-end">
+            <div className="ml-auto col-md-6 d-flex justify-content-end">
+               <UploadImage currentFolder={currentFolder} />
+            &nbsp;
               <UploadFile currentFolder={currentFolder} />
               &nbsp;
               <CreateFile currentFolder={currentFolder} />
